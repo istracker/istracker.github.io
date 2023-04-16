@@ -2755,7 +2755,7 @@ hr,
   background-size: 100% 100%;
 }
 #menu .brand {
-  padding: 40px 20px 2em;
+  padding: 40px 30px 2em;
   background: rgba(63, 81, 181, 0.5);
 }
 #menu .avatar {
@@ -2787,15 +2787,15 @@ hr,
   height: 300px;
   min-height: calc(100% - 115px);
   list-style: none;
-  line-height: 44px;
+  line-height: 30px;
 }
 #menu .nav li {
-  padding: 0 20px;
+  padding: 0 30px;
 }
 #menu .nav li .icon {
   position: absolute;
   top: 0;
-  left: 20px;
+  left: 30px;
   line-height: inherit;
 }
 #menu .nav li:hover,
@@ -2810,9 +2810,9 @@ hr,
 }
 #menu .nav a {
   display: block;
-  padding-left: 48px;
-  height: 44px;
-  line-height: 44px;
+  padding-left: 72px;
+  height: 30px;
+  line-height: 30px;
   font-weight: 500;
   color: #727272;
   text-decoration: none;
@@ -2828,7 +2828,7 @@ hr,
   min-height: calc(100vh - 340px);
 }
 .container {
-  width: 960px;
+  width: 85%;
   margin: 0 auto;
 }
 .container:after {
@@ -2944,7 +2944,7 @@ a[title="站长统计"] {
   top: 0;
   width: 100%;
   color: #fff;
-  height: 56px;
+  height: 10px;
   background: #3f51b5;
   -webkit-transition: padding-left 0.6s ease-in-out, background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s linear;
   transition: padding-left 0.6s ease-in-out, background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s linear;
@@ -2957,9 +2957,9 @@ a[title="站长统计"] {
   visibility: visible;
 }
 .header-icon {
-  width: 56px;
-  height: 56px;
-  line-height: 56px;
+  width: 10px;
+  height: 10px;
+  line-height: 10px;
   text-align: center;
   color: #fff;
 }
@@ -3626,7 +3626,7 @@ pre .javascript .function {
   width: 20%;
 }
 .post-toc-wrap.fixed {
-  top: 76px;
+  top: 30px;
   bottom: 140px;
   overflow-y: auto;
 }
@@ -3886,8 +3886,8 @@ pre .javascript .function {
 .post-content h3,
 .post-content h4,
 .post-content h5 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 10px;
+  margin-top: -10px;
 }
 .post-content h1,
 .post-content h2,
