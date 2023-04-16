@@ -2975,8 +2975,9 @@ a[title="站长统计"] {
   white-space: nowrap;
 }
 .content-header {
+  min-height: 210px;
   margin-left: -240px;
-  padding: 50px 16px 5px 256px;
+  padding: 104px 16px 48px 256px;
   color: #fff;
   background: #3f51b5;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -3698,7 +3699,7 @@ pre .javascript .function {
   padding-top: 20px;
 }
 .post-card {
-  margin-top: -150px;
+  margin-top: 0px;
   min-height: 100px;
   padding: 35px;
   background: #fff;
