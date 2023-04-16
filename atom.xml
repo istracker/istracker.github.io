@@ -2,11 +2,11 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>torvalds小纪</title>
   
-  <subtitle>我们偷偷提问 获取别人的答案 然后继续犯错</subtitle>
+  
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-04-16T07:59:36.773Z</updated>
+  <updated>2023-04-16T10:17:32.777Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,43 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一步十年</title>
+    <link href="http://example.com/2023/04/16/%E4%B8%80%E6%AD%A5%E5%8D%81%E5%B9%B4/"/>
+    <id>http://example.com/2023/04/16/%E4%B8%80%E6%AD%A5%E5%8D%81%E5%B9%B4/</id>
+    <published>2023-04-16T10:09:56.000Z</published>
+    <updated>2023-04-16T10:17:32.777Z</updated>
+    
+    <content type="html"><![CDATA[<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">Java世界，引用之术，</span><br><span class="line">强如钢铁，锁印心头。</span><br><span class="line">对目标持有，断舍离，</span><br><span class="line">唯有显式释放，方解脱。</span><br><span class="line"></span><br><span class="line">强引用者，最坚固，</span><br><span class="line">变更朝夕，不曾疲。</span><br><span class="line">对象引用，永不放，</span><br><span class="line">即便程序结束，亦存在。</span><br><span class="line"></span><br><span class="line">软引用者，如梦幻，</span><br><span class="line">堪比轻风，透过窗。</span><br><span class="line">内存不足，自愿抛，</span><br><span class="line">释放压力，亦不忧。</span><br><span class="line"></span><br><span class="line">弱引用者，身脆弱，</span><br><span class="line">如莲花叶，水中摇。</span><br><span class="line">一旦无主，忍辱负重，</span><br><span class="line">自动消失，离场幽。</span><br><span class="line"></span><br><span class="line">虚引用者，无形在，</span><br><span class="line">犹如虚影，难触摸。</span><br><span class="line">标记对象，悄无声，</span><br><span class="line">对象回收，告一段。</span><br><span class="line"></span><br><span class="line">引用之道，多技艺，</span><br><span class="line">强，软，弱，虚，难悉。</span><br><span class="line">了解深，方掌握，</span><br><span class="line">Java引用，亦修行。</span><br></pre></td></tr></table></figure><h2 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> com.ec.mpcore.service.poster.impl;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.ref.WeakReference;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 弱引用回收测试</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WeakReferenceDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> WeakReference&lt;String&gt; weakReference1;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> WeakReference&lt;String&gt; weakReference2;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        test1();</span><br><span class="line">        <span class="comment">//可以输出hello值，此时两个弱引用扔持有对象，而且未进行gc</span></span><br><span class="line">        System.out.println(<span class="string">&quot;未进行gc时，只有弱引用指向value内存区域：&quot;</span> + weakReference1.get());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//此时已无强引用执行&quot;value&quot;所在内存区域，gc时会回收弱引用</span></span><br><span class="line">        System.gc();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//此时输出都为nuill</span></span><br><span class="line">        System.out.println(<span class="string">&quot;进行gc时，只有弱引用指向value内存区域：&quot;</span> + weakReference1.get());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test1</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">hello</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;value&quot;</span>);</span><br><span class="line"></span><br><span class="line">        weakReference1 = <span class="keyword">new</span> <span class="title class_">WeakReference</span>&lt;&gt;(hello);</span><br><span class="line"></span><br><span class="line">        System.gc();</span><br><span class="line">        <span class="comment">//此时gc不会回收弱引用，因为字符串&quot;value&quot;仍然被hello对象强引用</span></span><br><span class="line">        System.out.println(<span class="string">&quot;进行gc时，强引用与弱引用同时指向value内存区域：&quot;</span> + weakReference1.get());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;figure class=&quot;highlight plaintext&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span c</summary>
+      
+    
+    
+    
+    
+    <category term="Java" scheme="http://example.com/tags/Java/"/>
+    
+    <category term="虚拟机" scheme="http://example.com/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello</title>
+    <link href="http://example.com/2023/04/16/Hello/"/>
+    <id>http://example.com/2023/04/16/Hello/</id>
+    <published>2023-04-16T10:09:11.000Z</published>
+    <updated>2023-04-16T10:09:11.211Z</updated>
+    
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>

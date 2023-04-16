@@ -2828,7 +2828,7 @@ hr,
   min-height: calc(100vh - 340px);
 }
 .container {
-  width: 90%;
+  width: 960px;
   margin: 0 auto;
 }
 .container:after {
@@ -3699,7 +3699,7 @@ pre .javascript .function {
   padding-top: 20px;
 }
 .post-card {
-  margin-top: 0px;
+  margin-top: -150px;
   min-height: 100px;
   padding: 35px;
   background: #fff;
