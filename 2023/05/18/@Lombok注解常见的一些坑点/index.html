@@ -29,7 +29,7 @@
 <meta property="og:description" content="Lombok 是一个 Java 库，可以通过注解的方式来简化 Java 代码的编写。虽然 Lombok 的使用可以减少代码量，并提高代码的可读性和可维护性，但是在使用的时候还是需要注意一些坑点。 以下是一些常见的 Lombok 使用坑点：  @Data 注解可能会导致无限递归。@Data 注解会自动生成 getter、setter、toString、equals、hashCode 方法，如果在类中">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-05-18T03:06:14.000Z">
-<meta property="article:modified_time" content="2023-05-18T04:52:09.041Z">
+<meta property="article:modified_time" content="2023-05-18T08:50:08.821Z">
 <meta property="article:author" content="torvalds">
 <meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
@@ -157,6 +157,13 @@
 
 <div class="container body-wrap">
     
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-Data-%E6%B3%A8%E8%A7%A3%E5%AF%BC%E8%87%B4%E6%97%A0%E9%99%90%E9%80%92%E5%BD%92%E7%9A%84%E6%A1%88%E4%BE%8B"><span class="post-toc-number">1.</span> <span class="post-toc-text">1. @Data 注解导致无限递归的案例</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-Builder-%E6%B3%A8%E8%A7%A3%E9%93%BE%E5%BC%8F%E8%B0%83%E7%94%A8%E9%A1%BA%E5%BA%8F%E9%94%99%E8%AF%AF%E7%9A%84%E6%A1%88%E4%BE%8B%EF%BC%9A"><span class="post-toc-number">2.</span> <span class="post-toc-text">2.@Builder 注解链式调用顺序错误的案例：</span></a></li></ol>
+        </nav>
+    </aside>
+
 
 <article id="post-@Lombok注解常见的一些坑点"
   class="post-article article-type-post fade" itemprop="blogPost">
@@ -190,10 +197,7 @@
 </ol>
 <p>以上是一些常见的 Lombok 使用坑点，需要在使用 Lombok 时注意。</p>
 <hr>
-<ol>
-<li>@Data 注解导致无限递归的案例：</li>
-</ol>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Data</span>
+<h3 id="1-Data-注解导致无限递归的案例"><a href="#1-Data-注解导致无限递归的案例" class="headerlink" title="1. @Data 注解导致无限递归的案例"></a>1. @Data 注解导致无限递归的案例</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Data</span>
 <span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
     <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
     <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
@@ -203,7 +207,6 @@
     <span class="token keyword">public</span> <span class="token class-name">User</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
         <span class="token keyword">this</span><span class="token punctuation">.</span>roles <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">&#125;</span>
-    
 <span class="token punctuation">&#125;</span>
 
 <span class="token annotation punctuation">@Data</span>
@@ -215,7 +218,6 @@
         <span class="token keyword">this</span><span class="token punctuation">.</span>users <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">&#125;</span>
 <span class="token punctuation">&#125;</span>
-
 
 <span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">AppTest</span> <span class="token keyword">extends</span> <span class="token class-name">TestCase</span> <span class="token punctuation">&#123;</span>
     <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">testUserAndRole</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
@@ -249,17 +251,21 @@
         <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>user1<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
         <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>role1<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>上面的代码中，User 类和 Role 类之间是多对多的关系，都包含了对方的实例变量。这样在使用 @Data 注解时，会导致无限递归，从而导致 StackOverflowError 错误。</p>
-<p>解决方法：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>StackOverflowError</span>
+	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
+	at <span class="token class-name"><span class="token namespace">com<span class="token punctuation">.</span>ria<span class="token punctuation">.</span>bean<span class="token punctuation">.</span></span>Role</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">Role</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">8</span><span class="token punctuation">)</span>
+	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
+	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>StringBuilder</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token class-name">StringBuilder</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">168</span><span class="token punctuation">)</span>
+	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span>AbstractCollection</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">AbstractCollection</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">473</span><span class="token punctuation">)</span>
+	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
+	at <span class="token class-name"><span class="token namespace">com<span class="token punctuation">.</span>ria<span class="token punctuation">.</span>bean<span class="token punctuation">.</span></span>User</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">User</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">8</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><strong>解决方法：</strong></p>
 <p>可以使用 @ToString、@EqualsAndHashCode、@Getter、@Setter、@RequiredArgsConstructor 注解来代替 @Data 注解，分别生成 toString、equals、hashCode、getter、setter、构造函数等方法。</p>
-<ol start="2">
-<li>@Builder 注解链式调用顺序错误的案例：</li>
-</ol>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Builder</span>
+<h3 id="2-Builder-注解链式调用顺序错误的案例："><a href="#2-Builder-注解链式调用顺序错误的案例：" class="headerlink" title="2.@Builder 注解链式调用顺序错误的案例："></a>2.@Builder 注解链式调用顺序错误的案例：</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Builder</span>
 <span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
     <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
     <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
@@ -329,7 +335,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2023-05-18T04:52:09.041Z" itemprop="dateUpdated">2023-05-18 12:52:09</time>
+    最后更新时间：<time datetime="2023-05-18T08:50:08.821Z" itemprop="dateUpdated">2023-05-18 16:50:08</time>
 </span><br>
 
 
@@ -404,6 +410,19 @@
     </div>
 
     
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2023/05/31/Redis%E5%92%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Redis和数据库的缓存一致性问题</h4>
+      </a>
+    </div>
+  
+
+  
+</nav>
+
 
 
     
