@@ -43,7 +43,7 @@
     <!-- custom head -->
     
 
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 4.2.1"></head>
 
 <body>
     <div id="loading" class="active"></div>
@@ -160,7 +160,7 @@
     <aside class="post-widget">
         <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
             <h4>TOC</h4>
-            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-Data-%E6%B3%A8%E8%A7%A3%E5%AF%BC%E8%87%B4%E6%97%A0%E9%99%90%E9%80%92%E5%BD%92%E7%9A%84%E6%A1%88%E4%BE%8B"><span class="post-toc-number">1.</span> <span class="post-toc-text">1. @Data 注解导致无限递归的案例</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-Builder-%E6%B3%A8%E8%A7%A3%E9%93%BE%E5%BC%8F%E8%B0%83%E7%94%A8%E9%A1%BA%E5%BA%8F%E9%94%99%E8%AF%AF%E7%9A%84%E6%A1%88%E4%BE%8B%EF%BC%9A"><span class="post-toc-number">2.</span> <span class="post-toc-text">2.@Builder 注解链式调用顺序错误的案例：</span></a></li></ol>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-Data-注解导致无限递归的案例"><span class="post-toc-number">1.</span> <span class="post-toc-text">1. @Data 注解导致无限递归的案例</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-Builder-注解链式调用顺序错误的案例："><span class="post-toc-number">2.</span> <span class="post-toc-text">2.@Builder 注解链式调用顺序错误的案例：</span></a></li></ol>
         </nav>
     </aside>
 
@@ -197,133 +197,128 @@
 </ol>
 <p>以上是一些常见的 Lombok 使用坑点，需要在使用 Lombok 时注意。</p>
 <hr>
-<h3 id="1-Data-注解导致无限递归的案例"><a href="#1-Data-注解导致无限递归的案例" class="headerlink" title="1. @Data 注解导致无限递归的案例"></a>1. @Data 注解导致无限递归的案例</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Data</span>
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> password<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Role</span><span class="token punctuation">></span></span> roles<span class="token punctuation">;</span>
-    
-    <span class="token keyword">public</span> <span class="token class-name">User</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">this</span><span class="token punctuation">.</span>roles <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+<h3 id="1-Data-注解导致无限递归的案例"><a href="#1-Data-注解导致无限递归的案例" class="headerlink" title="1. @Data 注解导致无限递归的案例"></a>1. @Data 注解导致无限递归的案例</h3><pre><code class="java">@Data
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private List&lt;Role&gt; roles;
 
-<span class="token annotation punctuation">@Data</span>
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Role</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> roleName<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">User</span><span class="token punctuation">></span></span> users<span class="token punctuation">;</span>
-    <span class="token keyword">public</span> <span class="token class-name">Role</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">this</span><span class="token punctuation">.</span>users <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+    public User() {
+        this.roles = new ArrayList&lt;&gt;();
+    }
+}
 
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">AppTest</span> <span class="token keyword">extends</span> <span class="token class-name">TestCase</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">testUserAndRole</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token class-name">User</span> user1 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">User</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user1<span class="token punctuation">.</span><span class="token function">setId</span><span class="token punctuation">(</span><span class="token number">1L</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user1<span class="token punctuation">.</span><span class="token function">setUsername</span><span class="token punctuation">(</span><span class="token string">"user1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user1<span class="token punctuation">.</span><span class="token function">setPassword</span><span class="token punctuation">(</span><span class="token string">"password1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+@Data
+public class Role {
+    private Long id;
+    private String roleName;
+    private List&lt;User&gt; users;
+    public Role() {
+        this.users = new ArrayList&lt;&gt;();
+    }
+}
 
-        <span class="token class-name">User</span> user2 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">User</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user2<span class="token punctuation">.</span><span class="token function">setId</span><span class="token punctuation">(</span><span class="token number">2L</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user2<span class="token punctuation">.</span><span class="token function">setUsername</span><span class="token punctuation">(</span><span class="token string">"user2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user2<span class="token punctuation">.</span><span class="token function">setPassword</span><span class="token punctuation">(</span><span class="token string">"password2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        
-        <span class="token class-name">Role</span> role1 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Role</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role1<span class="token punctuation">.</span><span class="token function">setId</span><span class="token punctuation">(</span><span class="token number">1L</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role1<span class="token punctuation">.</span><span class="token function">setRoleName</span><span class="token punctuation">(</span><span class="token string">"role1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+public class AppTest extends TestCase {
+    public void testUserAndRole() {
+        User user1 = new User();
+        user1.setId(1L);
+        user1.setUsername(&quot;user1&quot;);
+        user1.setPassword(&quot;password1&quot;);
 
-        <span class="token class-name">Role</span> role2 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Role</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role2<span class="token punctuation">.</span><span class="token function">setId</span><span class="token punctuation">(</span><span class="token number">2L</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role2<span class="token punctuation">.</span><span class="token function">setRoleName</span><span class="token punctuation">(</span><span class="token string">"role2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        User user2 = new User();
+        user2.setId(2L);
+        user2.setUsername(&quot;user2&quot;);
+        user2.setPassword(&quot;password2&quot;);
 
-        user1<span class="token punctuation">.</span><span class="token function">getRoles</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>role1<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        user1<span class="token punctuation">.</span><span class="token function">getRoles</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>role2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        Role role1 = new Role();
+        role1.setId(1L);
+        role1.setRoleName(&quot;role1&quot;);
 
-        user2<span class="token punctuation">.</span><span class="token function">getRoles</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>role2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        Role role2 = new Role();
+        role2.setId(2L);
+        role2.setRoleName(&quot;role2&quot;);
 
-        role2<span class="token punctuation">.</span><span class="token function">getUsers</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>user1<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role2<span class="token punctuation">.</span><span class="token function">getUsers</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>user1<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        role2<span class="token punctuation">.</span><span class="token function">getUsers</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>user2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        user1.getRoles().add(role1);
+        user1.getRoles().add(role2);
 
-        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>user1<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>role1<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+        user2.getRoles().add(role2);
 
+        role2.getUsers().add(user1);
+        role2.getUsers().add(user1);
+        role2.getUsers().add(user2);
+
+        System.out.println(user1.toString());
+        System.out.println(role1.toString());
+    }
+}</code></pre>
 <p>上面的代码中，User 类和 Role 类之间是多对多的关系，都包含了对方的实例变量。这样在使用 @Data 注解时，会导致无限递归，从而导致 StackOverflowError 错误。</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>StackOverflowError</span>
-	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
-	at <span class="token class-name"><span class="token namespace">com<span class="token punctuation">.</span>ria<span class="token punctuation">.</span>bean<span class="token punctuation">.</span></span>Role</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">Role</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">8</span><span class="token punctuation">)</span>
-	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
-	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>StringBuilder</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token class-name">StringBuilder</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">168</span><span class="token punctuation">)</span>
-	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span>AbstractCollection</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">AbstractCollection</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">473</span><span class="token punctuation">)</span>
-	at java<span class="token punctuation">.</span>base<span class="token operator">/</span><span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span>String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">2951</span><span class="token punctuation">)</span>
-	at <span class="token class-name"><span class="token namespace">com<span class="token punctuation">.</span>ria<span class="token punctuation">.</span>bean<span class="token punctuation">.</span></span>User</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token class-name">User</span><span class="token punctuation">.</span>java<span class="token operator">:</span><span class="token number">8</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
+<pre><code class="java">java.lang.StackOverflowError
+    at java.base/java.lang.String.valueOf(String.java:2951)
+    at com.ria.bean.Role.toString(Role.java:8)
+    at java.base/java.lang.String.valueOf(String.java:2951)
+    at java.base/java.lang.StringBuilder.append(StringBuilder.java:168)
+    at java.base/java.util.AbstractCollection.toString(AbstractCollection.java:473)
+    at java.base/java.lang.String.valueOf(String.java:2951)
+    at com.ria.bean.User.toString(User.java:8)</code></pre>
 <p><strong>解决方法：</strong></p>
 <p>可以使用 @ToString、@EqualsAndHashCode、@Getter、@Setter、@RequiredArgsConstructor 注解来代替 @Data 注解，分别生成 toString、equals、hashCode、getter、setter、构造函数等方法。</p>
-<h3 id="2-Builder-注解链式调用顺序错误的案例："><a href="#2-Builder-注解链式调用顺序错误的案例：" class="headerlink" title="2.@Builder 注解链式调用顺序错误的案例："></a>2.@Builder 注解链式调用顺序错误的案例：</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Builder</span>
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> password<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Integer</span> age<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
+<h3 id="2-Builder-注解链式调用顺序错误的案例："><a href="#2-Builder-注解链式调用顺序错误的案例：" class="headerlink" title="2.@Builder 注解链式调用顺序错误的案例："></a>2.@Builder 注解链式调用顺序错误的案例：</h3><pre><code class="java">@Builder
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private Integer age;
+}
 
-<span class="token class-name">User</span> user <span class="token operator">=</span> <span class="token class-name">User</span><span class="token punctuation">.</span><span class="token function">builder</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-    <span class="token punctuation">.</span><span class="token function">username</span><span class="token punctuation">(</span><span class="token string">"test"</span><span class="token punctuation">)</span>
-    <span class="token punctuation">.</span><span class="token function">age</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
-    <span class="token punctuation">.</span><span class="token function">id</span><span class="token punctuation">(</span><span class="token number">1L</span><span class="token punctuation">)</span>
-    <span class="token punctuation">.</span><span class="token function">build</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
+User user = User.builder()
+    .username(&quot;test&quot;)
+    .age(20)
+    .id(1L)
+    .build();
+</code></pre>
 <p>上面的代码中，使用 @Builder 注解创建 User 对象时，设置属性的顺序与构造函数的参数顺序不一致，导致创建 User 对象时属性设置错误。</p>
 <p>解决方法：</p>
 <p>需要保证设置属性的顺序与构造函数的参数顺序一致，可以使用 @Builder.Default 注解为属性设置默认值来解决这个问题。</p>
 <ol start="3">
 <li>@AllArgsConstructor 和 @RequiredArgsConstructor 注解导致构造函数参数过多的案例：</li>
 </ol>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@AllArgsConstructor</span>
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> password<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> email<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> phone<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> address<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Integer</span> age<span class="token punctuation">;</span>
-    <span class="token comment">// 省略 getter、setter 方法</span>
-<span class="token punctuation">&#125;</span>
+<pre><code class="java">@AllArgsConstructor
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private String email;
+    private String phone;
+    private String address;
+    private Integer age;
+    // 省略 getter、setter 方法
+}
 
-<span class="token class-name">User</span> user <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">User</span><span class="token punctuation">(</span><span class="token number">1L</span><span class="token punctuation">,</span> <span class="token string">"test"</span><span class="token punctuation">,</span> <span class="token string">"123456"</span><span class="token punctuation">,</span> <span class="token string">"test@test.com"</span><span class="token punctuation">,</span> <span class="token string">"123456789"</span><span class="token punctuation">,</span> <span class="token string">"北京市"</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
+User user = new User(1L, &quot;test&quot;, &quot;123456&quot;, &quot;test@test.com&quot;, &quot;123456789&quot;, &quot;北京市&quot;, 20);
+</code></pre>
 <p>上面的代码中，使用 @AllArgsConstructor 注解为 User 类生成了一个包含所有实例变量的构造函数，导致构造函数参数过多，不便于使用。</p>
 <p>解决方法：</p>
 <p>可以使用 @NoArgsConstructor、@NonNull、@Builder 等注解来代替 @AllArgsConstructor 注解，根据实际情况选择合适的注解。</p>
 <ol start="4">
 <li>@Synchronized 注解导致性能问题的案例：</li>
 </ol>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Data</span>
-<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">User</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Long</span> id<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> username<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> password<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> email<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> phone<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">String</span> address<span class="token punctuation">;</span>
-    <span class="token keyword">private</span> <span class="token class-name">Integer</span> age<span class="token punctuation">;</span>
+<pre><code class="java">@Data
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private String email;
+    private String phone;
+    private String address;
+    private Integer age;
 
-    <span class="token annotation punctuation">@Synchronized</span>
-    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">updateUser</span><span class="token punctuation">(</span><span class="token class-name">User</span> user<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token comment">// 更新用户信息</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
+    @Synchronized
+    public void updateUser(User user) {
+        // 更新用户信息
+    }
+}
+</code></pre>
 <p>上面的代码中，使用 @Synchronized 注解对 updateUser 方法进行同步，但是这会导致性能问题。</p>
 <p>解决方法：</p>
 <p>可以通过其他方式来控制同步的范围，如使用 synchronized 关键字或者使用 Lock 接口等。</p>
@@ -469,7 +464,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>博客内容遵循 <a rel="license noopener" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+            <span>博客内容遵循 <a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
         </p>
     </div>
     <div class="bottom">
