@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>CentOs7 下Docker方式搭建Kafka | torvalds小纪</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#423d75">
+    
+    
+    <meta name="keywords" content="">
+    <meta name="description" content="CentOs7 下Docker方式搭建Kafka 安装Docker  在CentOS 7虚拟机上安装Docker，可以通过以下命令进行： sudo yum install docker 安装完成后，启动Docker服务并设置为开机自启： sudo systemctl start docker sudo systemctl enable docker  创建一个Docker网络，用于Kafka容器和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOs7 下Docker方式搭建Kafka">
+<meta property="og:url" content="http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/index.html">
+<meta property="og:site_name" content="torvalds小纪">
+<meta property="og:description" content="CentOs7 下Docker方式搭建Kafka 安装Docker  在CentOS 7虚拟机上安装Docker，可以通过以下命令进行： sudo yum install docker 安装完成后，启动Docker服务并设置为开机自启： sudo systemctl start docker sudo systemctl enable docker  创建一个Docker网络，用于Kafka容器和">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-06-06T10:38:29.107Z">
+<meta property="article:modified_time" content="2023-06-06T10:38:29.129Z">
+<meta property="article:author" content="torvalds">
+<meta name="twitter:card" content="summary">
+    
+        <link rel="alternate" type="application/atom+xml" title="torvalds小纪" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">torvalds</h5>
+          <a href="mailto:li8miles@qq.com" title="li8miles@qq.com" class="mail">li8miles@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                归档
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                标签
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                目录
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/istracker" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">CentOs7 下Docker方式搭建Kafka</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">CentOs7 下Docker方式搭建Kafka</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2023-06-06T10:38:29.107Z" itemprop="datePublished" class="page-time">
+  2023-06-06
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#CentOs7-下Docker方式搭建Kafka"><span class="post-toc-number">1.</span> <span class="post-toc-text">CentOs7 下Docker方式搭建Kafka</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-CentOs7 下Docker方式搭建Kafka"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">CentOs7 下Docker方式搭建Kafka</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2023-06-06 18:38:29" datetime="2023-06-06T10:38:29.107Z"  itemprop="datePublished">2023-06-06</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h3 id="CentOs7-下Docker方式搭建Kafka"><a href="#CentOs7-下Docker方式搭建Kafka" class="headerlink" title="CentOs7 下Docker方式搭建Kafka"></a>CentOs7 下Docker方式搭建Kafka</h3><ol>
+<li>安装Docker</li>
+</ol>
+<p>在CentOS 7虚拟机上安装Docker，可以通过以下命令进行：</p>
+<pre><code>sudo yum install docker </code></pre><p>安装完成后，启动Docker服务并设置为开机自启：</p>
+<pre><code>sudo systemctl start docker sudo systemctl enable docker </code></pre><ol start="2">
+<li>创建一个Docker网络，用于Kafka容器和Zookeeper容器之间的通信。可以使用以下命令创建一个名为<code>kafka-net</code>的网络：</li>
+</ol>
+<pre><code>docker network create kafka-net</code></pre><ol start="3">
+<li>Zookeeper</li>
+</ol>
+<p>&lt;1&gt; 通过Docker Hub下载Zookeeper镜像，可以使用以下命令：</p>
+<pre><code>docker pull zookeeper </code></pre><p>&lt;2&gt; 启动Zookeeper容器</p>
+<p>可以使用以下命令启动Zookeeper容器：</p>
+<pre><code>docker run -d \
+    --name zookeeper \
+    --network kafka-net \
+    -p 2181:2181 \
+    zookeeper</code></pre><p>其中，<code>kafka-net</code>是之前创建的Docker网络。</p>
+<ol start="4">
+<li>Kafka</li>
+</ol>
+<p>&lt;1&gt; 通过Docker Hub下载Kafka镜像，可以使用以下命令：</p>
+<pre><code>docker pull wurstmeister/kafka </code></pre><p>&lt;2&gt; 启动Kafka容器</p>
+<p>创建完成后，可以通过以下命令启动Kafka容器：</p>
+<pre><code>docker run -d \    
+    --name kafka \    
+    --network kafka-net \    
+    -p 9092:9092 \    
+    -e KAFKA_ADVERTISED_HOST_NAME=&lt;你的虚拟机IP&gt; \    
+    -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \    
+    -e KAFKA_ADVERTISED_PORT=9092 \    
+    -e KAFKA_CREATE_TOPICS=&lt;topic名&gt;:&lt;partition数&gt;:&lt;replication factor&gt; \    
+    wurstmeister/kafka </code></pre><p>其中，</p>
+<p><code>&lt;你的虚拟机IP&gt;</code>需要替换为你的虚拟机IP地址，</p>
+<p><code>&lt;topic名&gt;:&lt;partition数&gt;:&lt;replication factor&gt;</code>需要替换为你要创建的topic的名称、分区数和副本数。</p>
+<p>例如，要创建一个名为<code>test</code>的topic，包含3个分区和2个副本，可以使用以下命令：</p>
+<pre><code>docker run -d \
+    --name kafka \
+    --network kafka-net \
+    -p 9092:9092 \
+    -e KAFKA_ADVERTISED_HOST_NAME=192.168.2.40 \
+    -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+    -e KAFKA_ADVERTISED_PORT=9092 \
+    -e KAFKA_CREATE_TOPICS=test:3:2 \
+    wurstmeister/kafka
+</code></pre><ol start="5">
+<li><p>验证</p>
+<p>Kafka容器启动后，可以使用以下命令进入容器内部：</p>
+<pre><code>docker exec -it kafka /bin/bash </code></pre><p>进入容器后，可以使用Kafka自带的命令行工具<code>kafka-console-producer.sh</code>和<code>kafka-console-consumer.sh</code>进行测试。例如，使用以下命令向<code>test</code>主题发送消息：</p>
+<pre><code>/opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test </code></pre><p>使用以下命令从<code>test</code>主题消费消息：</p>
+<pre><code>/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning </code></pre><p>至此，你就可以在CentOS 7虚拟机上通过Docker安装和使用Kafka了。</p>
+</li>
+</ol>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2023-06-06T10:38:29.129Z" itemprop="dateUpdated">2023-06-06 18:38:29</time>
+</span><br>
+
+
+        
+    </div>
+    
+    <footer>
+        <a href="http://example.com">
+            <img src="/img/avatar.jpg" alt="torvalds">
+            torvalds
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&title=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&pic=http://example.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&title=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&via=http://example.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2023/05/31/Redis%E5%92%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Redis和数据库的缓存一致性问题</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+		
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+			<span>©2023-2023 | produced by torvalds | 没有什么比真相更重要</span>
+        </p>
+    </div>
+</footer>
+
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&title=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&pic=http://example.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&title=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《CentOs7 下Docker方式搭建Kafka》 — torvalds小纪&url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/&via=http://example.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://example.com/2023/06/06/CentOs7%20%E4%B8%8BDocker%E6%96%B9%E5%BC%8F%E6%90%AD%E5%BB%BAKafka/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '慢走不送';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '愿原力与你同在';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
