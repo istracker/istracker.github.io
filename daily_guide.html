@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日执行系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f9f6f0;
+  --paper2: #f2ede4;
+  --paper3: #e8e1d5;
+  --ink: #2c2620;
+  --ink2: #5c5248;
+  --ink3: #9c9088;
+  --rust: #b5531a;
+  --gold: #c8952a;
+  --sage: #4a7c6f;
+  --slate: #3d5a6e;
+  --blush: #c4705a;
+  --line: #d8d0c4;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Serif SC', serif;
+  min-height: 100vh;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:100;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 56px 40px 100px; }
+
+/* ── HEADER ── */
+.masthead { border-top: 4px solid var(--ink); padding: 28px 0 24px; margin-bottom: 0; }
+.kicker { font-family:'Noto Sans SC',sans-serif; font-size:10px; letter-spacing:4px; color:var(--ink3); text-transform:uppercase; margin-bottom:10px; }
+.headline { font-family:'Playfair Display',serif; font-size:38px; font-weight:700; line-height:1.15; margin-bottom:6px; }
+.subline { font-family:'Crimson Pro',serif; font-style:italic; font-size:17px; color:var(--ink2); margin-bottom:20px; }
+.meta-strip {
+  display:flex; gap:0; border:1px solid var(--line); overflow:hidden; margin-bottom:32px;
+}
+.ms-cell {
+  flex:1; padding:12px 16px; border-right:1px solid var(--line); text-align:center;
+}
+.ms-cell:last-child { border-right:none; }
+.ms-label { font-family:'Noto Sans SC',sans-serif; font-size:9px; letter-spacing:2px; color:var(--ink3); text-transform:uppercase; margin-bottom:4px; }
+.ms-val { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--ink); }
+.ms-val.gold { color:var(--gold); }
+.ms-val.sage { color:var(--sage); }
+.ms-val.rust { color:var(--rust); }
+.ms-val.slate { color:var(--slate); }
+
+/* ── NAV TABS ── */
+.tabs { display:flex; gap:0; margin-bottom:32px; border-bottom:2px solid var(--ink); }
+.tab {
+  font-family:'Noto Sans SC',sans-serif; font-size:12px; font-weight:500;
+  padding:10px 20px; cursor:pointer; border:none; background:transparent;
+  color:var(--ink3); transition:all 0.2s; letter-spacing:1px;
+  border-bottom: 2px solid transparent; margin-bottom:-2px;
+}
+.tab:hover { color:var(--ink); }
+.tab.active { color:var(--ink); border-bottom-color:var(--ink); }
+
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* ── TIME BLOCKS ── */
+.day-section { margin-bottom: 48px; }
+.day-title-row {
+  display:flex; align-items:center; gap:12px; margin-bottom:16px;
+}
+.day-badge {
+  font-family:'Noto Sans SC',sans-serif; font-size:10px; letter-spacing:3px;
+  text-transform:uppercase; padding:5px 12px; border:1px solid;
+}
+.badge-am   { color:var(--gold);  border-color:var(--gold);  background:rgba(200,149,42,0.07); }
+.badge-work { color:var(--slate); border-color:var(--slate); background:rgba(61,90,110,0.07); }
+.badge-pm   { color:var(--sage);  border-color:var(--sage);  background:rgba(74,124,111,0.07); }
+.badge-night{ color:var(--ink2); border-color:var(--line);  background:rgba(44,38,32,0.04); }
+.badge-sat  { color:var(--rust);  border-color:var(--rust);  background:rgba(181,83,26,0.07); }
+.badge-sun  { color:var(--ink3);  border-color:var(--line);  background:var(--paper2); }
+
+.day-rule { flex:1; height:1px; background:var(--line); }
+
+/* Timeline */
+.timeline { position:relative; padding-left:0; }
+.tl-block {
+  display:grid;
+  grid-template-columns: 110px 1fr;
+  gap:0;
+  margin-bottom:3px;
+  border:1px solid var(--line);
+  overflow:hidden;
+  cursor:pointer;
+  transition: box-shadow 0.2s;
+}
+.tl-block:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.tl-block.open { border-color: var(--ink2); }
+
+.tl-time {
+  background: var(--paper2);
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  display:flex; flex-direction:column; justify-content:center;
+}
+.tl-hour {
+  font-family:'Noto Sans SC',monospace; font-size:13px; font-weight:500;
+  color:var(--ink); margin-bottom:2px;
+}
+.tl-dur { font-size:10px; color:var(--ink3); }
+
+.tl-main { padding:14px 18px; display:flex; align-items:center; gap:12px; }
+.tl-icon { font-size:18px; flex-shrink:0; }
+.tl-info { flex:1; }
+.tl-name { font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:500; color:var(--ink); margin-bottom:2px; }
+.tl-hint { font-size:11px; color:var(--ink3); }
+.tl-arrow { font-size:10px; color:var(--ink3); transition:transform 0.3s; flex-shrink:0; }
+.tl-block.open .tl-arrow { transform:rotate(180deg); }
+
+.tl-detail {
+  display:none;
+  grid-column:1/-1;
+  padding:16px 20px 18px 20px;
+  border-top:1px solid var(--line);
+  background:var(--paper);
+}
+.tl-block.open .tl-detail { display:block; }
+
+/* Tasks inside detail */
+.task { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid rgba(216,208,196,0.4); }
+.task:last-child { border-bottom:none; }
+.chk {
+  width:15px; height:15px; border:1.5px solid var(--line); border-radius:2px;
+  flex-shrink:0; margin-top:2px; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; font-size:9px; color:transparent; transition:all 0.2s;
+}
+.chk.done { background:var(--sage); border-color:var(--sage); color:#fff; }
+.task-body { flex:1; }
+.task-name { font-size:12px; color:var(--ink); margin-bottom:2px; line-height:1.55; }
+.task-name.crossed { text-decoration:line-through; color:var(--ink3); }
+.task-note { font-family:'Crimson Pro',serif; font-style:italic; font-size:11px; color:var(--ink3); line-height:1.6; }
+.t-tag {
+  font-family:'Noto Sans SC',sans-serif; font-size:9px; padding:2px 7px;
+  flex-shrink:0; margin-top:3px;
+}
+.tt-career { background:rgba(61,90,110,0.1); color:var(--slate); }
+.tt-invest { background:rgba(200,149,42,0.1); color:var(--gold); }
+.tt-growth { background:rgba(74,124,111,0.1); color:var(--sage); }
+.tt-relate { background:rgba(181,83,26,0.1); color:var(--rust); }
+.tt-body   { background:rgba(44,38,32,0.06); color:var(--ink2); }
+.tt-mind   { background:rgba(156,144,136,0.15); color:var(--ink3); }
+
+/* Callout */
+.note {
+  padding:13px 16px; margin:12px 0; font-size:12px; line-height:1.75;
+  border-left:3px solid; background:var(--paper2); color:var(--ink2);
+}
+.note strong { display:block; font-family:'Noto Sans SC',sans-serif; font-size:9px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+.n-gold  { border-color:var(--gold); } .n-gold strong  { color:var(--gold); }
+.n-sage  { border-color:var(--sage); } .n-sage strong  { color:var(--sage); }
+.n-rust  { border-color:var(--rust); } .n-rust strong  { color:var(--rust); }
+.n-slate { border-color:var(--slate);} .n-slate strong { color:var(--slate);}
+.n-ink   { border-color:var(--ink);  } .n-ink strong   { color:var(--ink2); }
+
+/* ── WEEK RHYTHM TAB ── */
+.week-map { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:20px; }
+.wm-col { border:1px solid var(--line); overflow:hidden; }
+.wm-head {
+  font-family:'Noto Sans SC',sans-serif; font-size:10px; letter-spacing:1px;
+  padding:8px 6px; text-align:center; border-bottom:1px solid var(--line);
+}
+.wm-col.wk { background:var(--paper2); }
+.wm-col.wk .wm-head { background:var(--paper3); }
+.wm-col.wkend-sat .wm-head { background: rgba(181,83,26,0.1); color:var(--rust); }
+.wm-col.wkend-sun .wm-head { background: var(--paper2); color:var(--ink3); }
+.wm-slot {
+  font-size:11px; color:var(--ink2); padding:8px 8px 6px;
+  border-bottom:1px solid rgba(216,208,196,0.4); line-height:1.5;
+  min-height:56px;
+}
+.wm-slot:last-child { border-bottom:none; }
+.wm-slot .slot-time { font-size:9px; color:var(--ink3); margin-bottom:2px; font-family:'Noto Sans SC',sans-serif; }
+.wm-slot.focus { background:rgba(74,124,111,0.05); }
+.wm-slot.invest { background:rgba(200,149,42,0.05); }
+.wm-slot.relate { background:rgba(181,83,26,0.05); }
+.wm-slot.rest   { background:rgba(44,38,32,0.02); color:var(--ink3); }
+
+/* ── BUDGET BAR ── */
+.budget-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
+.b-item { background:var(--paper2); border:1px solid var(--line); padding:16px; }
+.b-label { font-family:'Noto Sans SC',sans-serif; font-size:9px; letter-spacing:2px; color:var(--ink3); text-transform:uppercase; margin-bottom:6px; }
+.b-num { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; line-height:1; margin-bottom:4px; }
+.b-desc { font-size:11px; color:var(--ink3); line-height:1.5; }
+
+/* ── RULES TAB ── */
+.rule-item { display:grid; grid-template-columns:40px 1fr; gap:14px; padding:20px 0; border-bottom:1px solid var(--line); align-items:start; }
+.rule-item:first-child { border-top:1px solid var(--line); }
+.r-num { font-family:'Playfair Display',serif; font-size:26px; color:var(--line); font-weight:700; text-align:right; padding-top:2px; }
+.r-title { font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:500; color:var(--ink); margin-bottom:5px; }
+.r-body { font-size:12px; color:var(--ink2); line-height:1.8; }
+
+/* ── TRACKER TAB ── */
+.tracker-wrap { background:var(--ink); padding:28px 32px; }
+.tr-title { font-family:'Noto Sans SC',sans-serif; font-size:10px; letter-spacing:3px; color:#777; text-transform:uppercase; margin-bottom:24px; }
+.tr-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.tr-item { border-top:1px solid #333; padding-top:14px; }
+.tr-label { font-size:11px; color:#888; margin-bottom:4px; font-family:'Noto Sans SC',sans-serif; }
+.tr-val { font-family:'Playfair Display',serif; font-size:20px; color:#e8e4dc; margin-bottom:8px; }
+.tr-bar { height:2px; background:#333; margin-bottom:4px; }
+.tr-fill { height:100%; background:var(--gold); transition:width 1s ease; }
+.tr-note { font-size:11px; color:#666; font-family:'Crimson Pro',serif; font-style:italic; }
+.tr-input {
+  background:transparent; border:none; border-bottom:1px solid #444;
+  color:#e8e4dc; font-family:'Playfair Display',serif; font-size:18px;
+  width:100%; outline:none; padding:2px 0; margin-bottom:6px;
+}
+.tr-input::placeholder { color:#555; }
+
+/* ── COLOPHON ── */
+.colophon {
+  margin-top:48px; padding-top:20px; border-top:1px solid var(--line);
+  font-family:'Crimson Pro',serif; font-style:italic; font-size:13px;
+  color:var(--ink3); text-align:center; line-height:2.2;
+}
+
+/* Animations */
+.fade-in { opacity:0; transform:translateY(16px); animation:up 0.5s ease forwards; }
+@keyframes up { to { opacity:1; transform:translateY(0); } }
+
+@media(max-width:640px){
+  .wrap { padding:28px 16px 80px; }
+  .headline { font-size:26px; }
+  .tl-block { grid-template-columns:80px 1fr; }
+  .budget-row { grid-template-columns:1fr 1fr; }
+  .week-map { grid-template-columns:repeat(4,1fr); }
+  .tr-grid { grid-template-columns:1fr; }
+  .meta-strip { flex-wrap:wrap; }
+  .ms-cell { min-width:50%; }
+  .tabs { flex-wrap:wrap; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="masthead fade-in">
+  <div class="kicker">Daily Execution System · 2026 · v2.0</div>
+  <div class="headline">每日执行系统</div>
+  <div class="subline">基于你的真实作息，精细到每个时间块</div>
+  <div class="meta-strip">
+    <div class="ms-cell"><div class="ms-label">起床</div><div class="ms-val gold">07:50</div></div>
+    <div class="ms-cell"><div class="ms-label">睡觉</div><div class="ms-val slate">00:00</div></div>
+    <div class="ms-cell"><div class="ms-label">下班后可用</div><div class="ms-val sage">3~4h</div></div>
+    <div class="ms-cell"><div class="ms-label">周末状态</div><div class="ms-val rust">深度自由</div></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs fade-in" style="animation-delay:0.1s">
+  <button class="tab active" onclick="switchTab('weekday')">工作日</button>
+  <button class="tab" onclick="switchTab('weekend')">周末</button>
+  <button class="tab" onclick="switchTab('rhythm')">周节奏</button>
+  <button class="tab" onclick="switchTab('reading')">阅读系统</button>
+  <button class="tab" onclick="switchTab('rules')">执行原则</button>
+  <button class="tab" onclick="switchTab('tracker')">进度追踪</button>
+</div>
+
+
+<!-- ═══════════════════════════════
+     TAB: 工作日
+═══════════════════════════════ -->
+<div id="tab-weekday" class="tab-content active fade-in" style="animation-delay:0.2s">
+
+  <div class="note n-gold" style="margin-bottom:24px;">
+    <strong>工作日的核心原则</strong>
+    你每天有3-4小时可支配时间，这比大多数人都多。关键不是"做更多事"，而是"主任务优先，其余顺带"。每天下班后只有一个主任务，做完它这天就赢了。
+  </div>
+
+  <!-- 早晨 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-am">早晨</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">07:50</div><div class="tl-dur">30 min</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🌅</div>
+          <div class="tl-info"><div class="tl-name">起床启动</div><div class="tl-hint">不碰手机的黄金30分钟</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-gold"><strong>为什么重要</strong>醒来的第一个信息环境，决定了你这天大脑的底色。不要让算法来决定你今天关注什么。</div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">喝水，做5分钟拉伸或深呼吸</div><div class="task-note">让身体先醒，再让大脑工作。不需要完整的晨练，5分钟就够。</div></div><div class="t-tag tt-body">身体</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">写下今天最重要的一件事（一句话）</div><div class="task-note">"今天结束时，做了这一件事我会觉得这天没白过。"不是清单，是一件事。</div></div><div class="t-tag tt-mind">清醒</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">看一眼大盘行情（限时3分钟）</div><div class="task-note">了解方向，不做决策。看完立刻放下，不反复刷。</div></div><div class="t-tag tt-invest">投资</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上班 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-work">上班时间</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-block" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">上班中</div><div class="tl-dur">全力以赴</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">💻</div>
+          <div class="tl-info"><div class="tl-name">本职工作</div><div class="tl-hint">这是你最大的财务基础，守住它</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">专注本职，不因副业和投资分心</div><div class="task-note">工资收入是你一切计划的地基。在工作时间走神，是在用明天的收入换今天的焦虑消费。</div></div><div class="t-tag tt-career">职业</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">每天记录一个工作成果（一句话）</div><div class="task-note">比如"独立解决了X问题"、"优化了Y功能提升30%"。这些是半年后跳槽时的弹药，现在不记就忘了。</div></div><div class="t-tag tt-career">积累</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">午休：和同事聊聊 或 安静独处——二选一</div><div class="task-note">不要用午休刷资讯。那是在消耗下午的专注力。真正的休息是切换状态，不是换一个刺激源。</div></div><div class="t-tag tt-body">恢复</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下班后黄金时间 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-pm">下班后 · 黄金时间</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="note n-slate" style="margin-bottom:12px;">
+      <strong>3-4小时的分配逻辑</strong>
+      不是每天做所有事，而是按周轮换主题。今天职业发展，明天技术深耕，后天关系——专注比分散有效十倍。投资研究每周只有一次，固定在周三，最多1小时。
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">下班后</div><div class="tl-dur">1.5~2h</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">⭐</div>
+          <div class="tl-info"><div class="tl-name">主任务时间（按日轮换）</div><div class="tl-hint">这是一天里最重要的时间块</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-slate"><strong>按日轮换安排</strong></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【周一】职业发展：研究目标岗位市场</div><div class="task-note">打开Boss直聘，搜AI应用开发相关岗位，看薪资区间、看要求，记录下来。这不是要立刻跳槽，是了解自己的市场价格。</div></div><div class="t-tag tt-career">职业</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【周二】技术深耕：做一个小实验或写技术笔记</div><div class="task-note">带着问题去学，不是无目的刷资讯。比如"这周Claude更新了什么，能用到我的项目里吗"，动手试一试。</div></div><div class="t-tag tt-career">成长</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【周三】投资复盘：每周一次，限时60分钟</div><div class="task-note">看本周持仓变化、有无需要关注的行业动态，做记录。超过60分钟就停。不在这天做任何交易决策。</div></div><div class="t-tag tt-invest">投资</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【周四】AI前沿：读1-2篇有价值的内容</div><div class="task-note">不是信息焦虑式地刷，是选1-2个真正值得深读的内容，读完写下自己的判断。质量 > 数量。</div></div><div class="t-tag tt-growth">认知</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【周五】关系：约人或主动联系</div><div class="task-note">约一个认识但不够深的人吃饭，或给一个久没联系的朋友发消息。28岁在深圳，关系需要主动维护。</div></div><div class="t-tag tt-relate">关系</div></div>
+        </div>
+      </div>
+
+      <div class="tl-block" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">主任务后</div><div class="tl-dur">1~1.5h</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🌿</div>
+          <div class="tl-info"><div class="tl-name">自由时间</div><div class="tl-hint">做让你真正放松的事，不强制安排</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-ink"><strong>为什么要保留这块时间</strong>每天把所有时间都排满，是在对抗自己的人性。留出真正的自由时间，你才不会在主任务时间里"摸鱼"。</div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">运动、游戏、看剧、刷手机——随你</div><div class="task-note">唯一的要求：不要把这个时间用来焦虑。焦虑不算休息。</div></div><div class="t-tag tt-body">恢复</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">如果今天想多做一点，可以用这段时间</div><div class="task-note">但这是可选项，不是必须。状态好就多做，状态差就好好休息。</div></div><div class="t-tag tt-mind">弹性</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 睡前 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-night">睡前</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">23:40</div><div class="tl-dur">20 min</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🌙</div>
+          <div class="tl-info"><div class="tl-name">收尾与沉淀</div><div class="tl-hint">把今天真正变成自己的</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">写3句话的日记：做了什么 / 感受是什么 / 明天想做什么</div><div class="task-note">不需要长，3句话足够。这个习惯的价值在半年后显现——你会有清晰的轨迹，而不是模糊的记忆。</div></div><div class="t-tag tt-mind">清醒</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">📚 读书 30分钟（睡前最佳时机）</div><div class="task-note">按当前书单轮读。不需要读完一章，读30分钟就停。读完后在书边写一句话：这页让我想到了什么。</div></div><div class="t-tag tt-growth">阅读</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">写下明天的主任务（一句话）</div><div class="task-note">明天醒来就有方向，不会在迷茫中消耗早晨最清醒的时间。</div></div><div class="t-tag tt-mind">计划</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">0点前上床，手机放到够不着的地方</div><div class="task-note">熬夜刷手机是在用明天的精力换今晚的短暂刺激。你的目标需要你明天状态好。</div></div><div class="t-tag tt-body">身体</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-weekday -->
+
+
+<!-- ═══════════════════════════════
+     TAB: 周末
+═══════════════════════════════ -->
+<div id="tab-weekend" class="tab-content fade-in">
+
+  <div class="note n-rust" style="margin-bottom:24px;">
+    <strong>周末的定位</strong>
+    周末是一周里唯一能做长链条深度工作的时间。工作日的2小时只够维护，周六的整块时间才能真正推进。但周日必须留给恢复——一周七天都满负荷，不是高效，是在透支。
+  </div>
+
+  <!-- 周六 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-sat">周六 · 深度工作日</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">起床后</div><div class="tl-dur">30 min</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">☕</div>
+          <div class="tl-info"><div class="tl-name">慢启动，不强制</div><div class="tl-hint">周末的早晨不需要像工作日一样紧张</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">自然起床，不设闹钟（可以比平时晚1-2小时）</div><div class="task-note">睡够才能深度工作。周六不是比平时更早起的理由，而是睡得更好才能做更好的事。</div></div><div class="t-tag tt-body">恢复</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">写下今天的深度工作目标（一到两件事）</div><div class="task-note">不是清单，是"今天结束时，完成了X，这周就没白过"。</div></div><div class="t-tag tt-mind">计划</div></div>
+        </div>
+      </div>
+
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">上午</div><div class="tl-dur">3h</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🔥</div>
+          <div class="tl-info"><div class="tl-name">深度工作块（核心）</div><div class="tl-hint">一周最重要的3小时</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-sage"><strong>本阶段（未来3个月）的深度工作优先选项</strong></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【选项A】整理个人技术作品集</div><div class="task-note">你在AI应用开发上做了什么有价值的东西？把它整理成可以展示的形式。这是跳槽时最有力的弹药，比任何简历描述都有说服力。</div></div><div class="t-tag tt-career">职业</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【选项B】深研一个AI应用场景，写成文章</div><div class="task-note">选一个你在工作中遇到的真实问题，深入研究解决方案，写成技术文章发布。这同时建立个人品牌和技术深度。</div></div><div class="t-tag tt-career">影响力</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【选项C】认真研究一次跳槽可行性</div><div class="task-note">整理自己的技能清单、市场上的匹配岗位、薪资差距、需要补的缺口。做一次完整的分析，而不是随便刷刷招聘软件。</div></div><div class="t-tag tt-career">决策</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【选项D】周六阅读深潜：读当月重点书 1.5小时</div><div class="task-note">工作日每晚30分钟读书，周六可以做更长的深潜——读完一章后认真回答两个问题：① 这能解释我见过的什么蠢事？② 这和另一个学科的哪个模型有关？答不出来，重读。</div></div><div class="t-tag tt-growth">阅读</div></div>
+        </div>
+      </div>
+
+      <div class="tl-block" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">下午</div><div class="tl-dur">2~3h</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🤝</div>
+          <div class="tl-info"><div class="tl-name">关系 / 投资复盘（隔周轮换）</div><div class="tl-hint">两件同样重要但容易被忽视的事</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-rust"><strong>隔周轮换</strong>第一周做关系，第二周做投资复盘，交替进行。不在同一天都堆在一起。</div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【关系周】约1-2个人吃饭/咖啡/活动</div><div class="task-note">优先约：在深圳的同龄人、有趣的陌生人、行业前辈。不要只和熟人待在舒适区。扩大圈子是这个阶段被严重低估的事。</div></div><div class="t-tag tt-relate">关系</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">【投资周】月度/双周投资复盘（限时90分钟）</div><div class="task-note">议程：①持仓变化和原因 ②本月市场主要变化 ③有没有违反自己的原则 ④下个月需要关注什么。写下来，不超时。</div></div><div class="t-tag tt-invest">投资</div></div>
+        </div>
+      </div>
+
+      <div class="tl-block" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">傍晚</div><div class="tl-dur">1h</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🏃</div>
+          <div class="tl-info"><div class="tl-name">运动</div><div class="tl-hint">不是为了健身，是为了思维清醒</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">跑步、健身、游泳、骑车——选你喜欢的</div><div class="task-note">程序员久坐，运动是大脑恢复力的基础设施。周六运动后，周日的状态会明显更好。</div></div><div class="t-tag tt-body">身体</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 周日 -->
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-sun">周日 · 恢复与规划</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-block open" onclick="toggle(this)">
+        <div class="tl-time"><div class="tl-hour">全天</div><div class="tl-dur">轻量</div></div>
+        <div class="tl-main">
+          <div class="tl-icon">🌿</div>
+          <div class="tl-info"><div class="tl-name">上午自由，下午规划</div><div class="tl-hint">周日不安排深度任务</div></div>
+          <div class="tl-arrow">▼</div>
+        </div>
+        <div class="tl-detail">
+          <div class="note n-ink"><strong>周日的定位</strong>周日是蓄力，不是再做一天。上午完全自由，下午用30分钟规划下周，晚上联系家人或朋友。</div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">上午：做让你真正放松的任何事</div><div class="task-note">睡懒觉、做饭、看电影、逛街——不做任何和目标相关的事。这不是在浪费时间，是在投资下一周的状态。</div></div><div class="t-tag tt-body">恢复</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">下午30分钟：规划下周</div><div class="task-note">写下：①下周的一个主目标 ②每天的主任务（一句话） ③有没有需要提前准备的事。有了这个，周一早上不会迷茫。</div></div><div class="t-tag tt-mind">计划</div></div>
+          <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">晚上：联系家人或老朋友（打个电话）</div><div class="task-note">你在深圳，离老家远。关系不会因为你忙而自动维持，需要主动投入。每周一次，10分钟就够。</div></div><div class="t-tag tt-relate">关系</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /tab-weekend -->
+
+
+<!-- ═══════════════════════════════
+     TAB: 周节奏
+═══════════════════════════════ -->
+<div id="tab-rhythm" class="tab-content fade-in">
+
+  <div class="note n-sage" style="margin-bottom:20px;">
+    <strong>一周的节奏设计逻辑</strong>
+    职业发展占工作日的60%精力，技术深耕占30%，投资固定在周三，不蔓延到其他时间。周五留给关系，周六是一周最重要的深度工作日，周日完全恢复。
+  </div>
+
+  <div class="week-map">
+    <div class="wm-col wk">
+      <div class="wm-head">周一</div>
+      <div class="wm-slot focus"><div class="slot-time">下班后</div>职业发展<br>看招聘市场</div>
+      <div class="wm-slot"><div class="slot-time">睡前</div>3句话日记</div>
+    </div>
+    <div class="wm-col wk">
+      <div class="wm-head">周二</div>
+      <div class="wm-slot focus"><div class="slot-time">下班后</div>技术深耕<br>小实验/笔记</div>
+      <div class="wm-slot"><div class="slot-time">睡前</div>3句话日记</div>
+    </div>
+    <div class="wm-col wk">
+      <div class="wm-head">周三</div>
+      <div class="wm-slot invest"><div class="slot-time">下班后</div>投资复盘<br>限时60分钟</div>
+      <div class="wm-slot"><div class="slot-time">睡前</div>3句话日记</div>
+    </div>
+    <div class="wm-col wk">
+      <div class="wm-head">周四</div>
+      <div class="wm-slot focus"><div class="slot-time">下班后</div>AI前沿<br>精读1-2篇</div>
+      <div class="wm-slot"><div class="slot-time">睡前</div>3句话日记</div>
+    </div>
+    <div class="wm-col wk">
+      <div class="wm-head">周五</div>
+      <div class="wm-slot relate"><div class="slot-time">下班后</div>关系<br>约人/联系</div>
+      <div class="wm-slot rest"><div class="slot-time">晚间</div>放松不强制</div>
+    </div>
+    <div class="wm-col wkend-sat">
+      <div class="wm-head">周六</div>
+      <div class="wm-slot focus"><div class="slot-time">上午3h</div>深度工作<br>本周主攻项</div>
+      <div class="wm-slot relate"><div class="slot-time">下午</div>关系/投资<br>隔周轮换</div>
+      <div class="wm-slot"><div class="slot-time">傍晚</div>运动1小时</div>
+    </div>
+    <div class="wm-col wkend-sun">
+      <div class="wm-head">周日</div>
+      <div class="wm-slot rest"><div class="slot-time">上午</div>完全自由<br>不排任务</div>
+      <div class="wm-slot"><div class="slot-time">下午</div>规划下周<br>30分钟</div>
+      <div class="wm-slot relate"><div class="slot-time">晚间</div>联系家人<br>朋友</div>
+    </div>
+  </div>
+
+  <div class="budget-row">
+    <div class="b-item">
+      <div class="b-label">投资研究时间</div>
+      <div class="b-num" style="color:var(--gold)">2h/周</div>
+      <div class="b-desc">周三下班后<br>这是上限，不是目标</div>
+    </div>
+    <div class="b-item">
+      <div class="b-label">职业发展时间</div>
+      <div class="b-num" style="color:var(--slate)">6h/周</div>
+      <div class="b-desc">工作日+周六<br>最高优先级</div>
+    </div>
+    <div class="b-item">
+      <div class="b-label">关系投入时间</div>
+      <div class="b-num" style="color:var(--rust)">3h/周</div>
+      <div class="b-desc">周五+周日<br>不能继续往后推</div>
+    </div>
+    <div class="b-item">
+      <div class="b-label">真正的自由时间</div>
+      <div class="b-num" style="color:var(--sage)">8h/周</div>
+      <div class="b-desc">周日+工作日晚<br>不安排，不强制</div>
+    </div>
+  </div>
+
+</div><!-- /tab-rhythm -->
+
+
+<!-- ═══════════════════════════════
+     TAB: 阅读系统
+═══════════════════════════════ -->
+<div id="tab-reading" class="tab-content fade-in">
+
+  <div class="note n-sage" style="margin-bottom:24px;">
+    <strong>阅读系统的核心逻辑</strong>
+    每天睡前30分钟 + 周六深潜1.5小时 = 每周约5小时阅读时间。今年只读5本，读透比读多重要。读完每章必须回答两个问题，答不出来就重读。
+  </div>
+
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-sat">今年只读这5本 · 按顺序</div>
+      <div class="day-rule"></div>
+    </div>
+
+    <div class="note n-rust" style="margin-bottom:14px;">
+      <strong>为什么只读5本</strong>你今年每周阅读时间约5小时，5本书读透需要约8个月。剩下4个月用来重读《影响力》和做跨学科连接笔记。书单上其余的书，等这5本真正进入你的思维框架再开。
+    </div>
+
+    <div class="tl-block open" onclick="toggle(this)">
+      <div class="tl-time"><div class="tl-hour">第1本</div><div class="tl-dur">心理学</div></div>
+      <div class="tl-main"><div class="tl-icon">🧠</div><div class="tl-info"><div class="tl-name">《影响力》· 西奥迪尼</div><div class="tl-hint">读三遍 · 25种偏误的直接来源</div></div><div class="tl-arrow">▼</div></div>
+      <div class="tl-detail">
+        <div class="note n-gold"><strong>为什么第一本读它</strong>立刻能用。互惠、承诺一致性、社会认同、权威、稀缺、喜好——这六个原则解释了你在投资、职场、关系里见过的绝大多数非理性行为，包括你自己的。</div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：承诺一致性</div><div class="task-note">人会为了和过去的承诺保持一致而做蠢事。亏损不止损、坚持错误方向——这个偏误在投资里代价最大。你上次被它影响是什么时候？</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：社会认同</div><div class="task-note">别人都在买，所以我也买——这是追涨的心理根源。识别它，不是消灭它（消灭不了），是知道它在发作时给自己一个24小时暂停键。</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">读完第一遍后的连接题</div><div class="task-note">① 过去一个月，我被哪个原则影响了，具体是哪件事？② 这和卡尼曼的"系统一思维"有什么关系？写下来。</div></div><div class="t-tag tt-growth">连接</div></div>
+      </div>
+    </div>
+
+    <div class="tl-block" onclick="toggle(this)">
+      <div class="tl-time"><div class="tl-hour">第2本</div><div class="tl-dur">系统论</div></div>
+      <div class="tl-main"><div class="tl-icon">⚙️</div><div class="tl-info"><div class="tl-name">《系统之美》· 梅多斯</div><div class="tl-hint">最薄最值 · 读完看什么都不一样</div></div><div class="tl-arrow">▼</div></div>
+      <div class="tl-detail">
+        <div class="note n-sage"><strong>为什么第二本读它</strong>最薄（200页），撬动最多。读完之后，你看股市、看公司、看职场、看自己的坏习惯，都会开始看到反馈回路和延迟效应。这是理解复杂系统的底层语言。</div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：反馈回路</div><div class="task-note">正反馈（越来越强）vs 负反馈（趋于稳定）。股市泡沫是正反馈失控的案例。你的定投是在利用哪种反馈？</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：延迟效应</div><div class="task-note">行动和结果之间有延迟——这是为什么人会过度反应或反应不足。你现在的职业投入，结果会在2-3年后才显现。这是延迟效应，不是没有用。</div></div><div class="t-tag tt-career">职业</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">读完后的连接题</div><div class="task-note">《影响力》里的"社会认同"，和《系统之美》里的"正反馈回路"，是怎么共同制造市场泡沫的？把两个模型连起来写一段话。</div></div><div class="t-tag tt-growth">连接</div></div>
+      </div>
+    </div>
+
+    <div class="tl-block" onclick="toggle(this)">
+      <div class="tl-time"><div class="tl-hour">第3本</div><div class="tl-dur">心理学</div></div>
+      <div class="tl-main"><div class="tl-icon">💡</div><div class="tl-info"><div class="tl-name">《思考，快与慢》· 卡尼曼</div><div class="tl-hint">投资者防错手册</div></div><div class="tl-arrow">▼</div></div>
+      <div class="tl-detail">
+        <div class="note n-slate"><strong>为什么第三本读它</strong>你在做投资决策，这本书是防错手册。系统一（直觉、情绪化）和系统二（理性、费力）的框架，能让你识别自己的决策是哪个系统在主导——尤其是在市场剧烈波动的时候。</div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：损失厌恶</div><div class="task-note">亏损的痛苦是同等收益快乐的2.5倍。这解释了为什么你会死守亏损仓位、为什么止损那么难。知道这个不能消灭偏误，但能让你感到痛苦时多等30秒再行动。</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：锚定效应</div><div class="task-note">股票从100跌到60，你觉得便宜了——但这个"便宜"是相对于锚点的，不是相对于真实价值的。你最近有没有因为锚定而产生错误判断？</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">读完后的连接题</div><div class="task-note">系统一的直觉判断 + 《影响力》的稀缺原则 + 《系统之美》的正反馈，三个模型是如何协同制造"追涨杀跌"这个蠢事的？</div></div><div class="t-tag tt-growth">连接</div></div>
+      </div>
+    </div>
+
+    <div class="tl-block" onclick="toggle(this)">
+      <div class="tl-time"><div class="tl-hour">第4本</div><div class="tl-dur">生物学</div></div>
+      <div class="tl-main"><div class="tl-icon">🧬</div><div class="tl-info"><div class="tl-name">《自私的基因》· 道金斯</div><div class="tl-hint">颠覆你对利他的全部认知</div></div><div class="tl-arrow">▼</div></div>
+      <div class="tl-detail">
+        <div class="note n-rust"><strong>为什么读这本</strong>读完之后，你对"竞争"、"合作"、"利他"的理解会被彻底重构。商业竞争、职场博弈、甚至你和家人的关系——都能在这里找到更深层的解释框架。</div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：鹰鸽博弈</div><div class="task-note">在竞争中，什么时候应该强硬（鹰），什么时候应该妥协（鸽）？这个模型直接适用于职场谈判和商业竞争——纯鹰策略会两败俱伤，纯鸽策略会被剥削。</div></div><div class="t-tag tt-career">职业</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：模因（Meme）</div><div class="task-note">"AI泡沫"、"35岁危机"——这些叙事是怎么在人群中传播并影响你的行为的？识别你现在脑子里有哪些"强势模因"在驱动你的决策。</div></div><div class="t-tag tt-growth">模型</div></div>
+      </div>
+    </div>
+
+    <div class="tl-block" onclick="toggle(this)">
+      <div class="tl-time"><div class="tl-hour">第5本</div><div class="tl-dur">系统论</div></div>
+      <div class="tl-main"><div class="tl-icon">🛡</div><div class="tl-info"><div class="tl-name">《反脆弱》· 塔勒布</div><div class="tl-hint">和你现在处境最直接相关</div></div><div class="tl-arrow">▼</div></div>
+      <div class="tl-detail">
+        <div class="note n-gold"><strong>为什么最后读它</strong>读完前四本再读这本，你会发现它是一个整合框架——系统论的黑天鹅、心理学的过度自信、生物学的适应性，都在这里汇聚成一个行动哲学：在不确定性里，不只是活下来，而是变得更强。</div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：杠铃策略</div><div class="task-note">一端极度保守（现金/债券），一端小额高风险押注，中间没有"中等风险"。你现在的资产配置，是杠铃还是集中押注在中间？</div></div><div class="t-tag tt-invest">投资</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">模型：反脆弱性</div><div class="task-note">脆弱的东西怕波动，强韧的东西扛波动，反脆弱的东西从波动中获益。你现在的职业技能是哪种？如果AI行业出现系统性调整，你会变弱还是变强？</div></div><div class="t-tag tt-career">职业</div></div>
+        <div class="task"><div class="chk" onclick="chk(this,event)"></div><div class="task-body"><div class="task-name">读完后的终极连接题</div><div class="task-note">把五本书的核心模型连起来，写一段话：一个28岁程序员，在AI时代的不确定性里，如何做到反脆弱？写完，这份阅读就真正完成了。</div></div><div class="t-tag tt-growth">整合</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-section">
+    <div class="day-title-row">
+      <div class="day-badge badge-work">阅读时间安排</div>
+      <div class="day-rule"></div>
+    </div>
+    <div class="budget-row">
+      <div class="b-item"><div class="b-label">每日阅读</div><div class="b-num" style="color:var(--sage)">30min</div><div class="b-desc">睡前固定<br>不强制读完一章</div></div>
+      <div class="b-item"><div class="b-label">周六深潜</div><div class="b-num" style="color:var(--rust)">1.5h</div><div class="b-desc">深度工作选项D<br>读+做跨学科连接</div></div>
+      <div class="b-item"><div class="b-label">每周总量</div><div class="b-num" style="color:var(--slate)">5h</div><div class="b-desc">5本书约8个月<br>剩余4个月重读</div></div>
+      <div class="b-item"><div class="b-label">唯一要求</div><div class="b-num" style="color:var(--gold)">2问</div><div class="b-desc">每章读完必答<br>答不出来就重读</div></div>
+    </div>
+    <div class="note n-gold">
+      <strong>两个必答问题</strong>
+      ① 这能解释我见过的什么蠢事（包括我自己的）？<br>
+      ② 这和另一个学科的哪个模型有关联？<br><br>
+      这两个问题不是为了难为自己，是因为能回答它们，才说明真正理解了——而不只是读过了。
+    </div>
+  </div>
+
+</div><!-- /tab-reading -->
+
+
+
+═══════════════════════════════ -->
+<div id="tab-rules" class="tab-content fade-in">
+
+  <div class="note n-gold" style="margin-bottom:24px;">
+    <strong>这些原则的来源</strong>
+    不是通用的自律建议，是基于你今天说的话——"疯狂学习"、"受困于身边没有合适的伴侣"、"害怕35岁危机"——专门设计的对抗策略。
+  </div>
+
+  <div class="rule-item">
+    <div class="r-num">01</div>
+    <div>
+      <div class="r-title">每天只有一个主任务，做完就赢了</div>
+      <div class="r-body">不是清单里的十件事，是一件事。写下来，做完它，其他都是附加分。清单越长，完成率越低，挫败感越强——最后变成你不愿意打开那个清单。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">02</div>
+    <div>
+      <div class="r-title">投资研究每周固定60分钟，不蔓延</div>
+      <div class="r-body">你已经有足够的知识框架。超出这个时间的学习，是焦虑消费，不是判断力提升。把节省下来的精力，放到收入增长上——那才是你现在最高ROI的事。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">03</div>
+    <div>
+      <div class="r-title">投资决策前，先写下理由再行动</div>
+      <div class="r-body">买入之前：写下买入理由（一句话）、什么情况下逻辑被证伪、能接受多大回撤。不是为了做得更好，是为了未来不用凭记忆重建决策，避免自我美化。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">04</div>
+    <div>
+      <div class="r-title">大额交易等待24小时</div>
+      <div class="r-body">任何超过5万的操作，强制等一天。不是等更多信息，就是等待。大多数冲动决策发生在消息刚到的时刻——情绪最高涨、判断最不可靠的时候。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">05</div>
+    <div>
+      <div class="r-title">关系不是"等财务自由了再说"的事</div>
+      <div class="r-body">每周至少一次主动联系——约人见面、给朋友发消息、给家人打电话。不需要很长时间，但需要主动。28岁在深圳的孤独感，只能用主动连接对抗，不能靠等待。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">06</div>
+    <div>
+      <div class="r-title">允许某些天什么都没做</div>
+      <div class="r-body">生病、情绪低落、就是不在状态——这些都会发生。允许它，不要用"打破连续记录"来制造罪恶感。罪恶感不产生行动，只产生更多逃避。断了就重新开始，不需要仪式感。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">07</div>
+    <div>
+      <div class="r-title">每月做一次校准，而不是每天反思</div>
+      <div class="r-body">每天反思容易变成焦虑循环。每月一次，看三件事：这个月的主任务完成了几件？收入/资产有没有往目标方向移动？关系这件事有没有真正花时间？一个月的数据比一天的感受可靠。</div>
+    </div>
+  </div>
+  <div class="rule-item">
+    <div class="r-num">08</div>
+    <div>
+      <div class="r-title">用行动记录代替目标宣言</div>
+      <div class="r-body">不要反复告诉自己"我要跳槽涨薪"。而是今天投了一份简历、整理了一页作品集、问了一个行业前辈问题。行动的痕迹比目标的宣示更有力量，也更难自我欺骗。</div>
+    </div>
+  </div>
+
+</div><!-- /tab-rules -->
+
+
+<!-- ═══════════════════════════════
+     TAB: 进度追踪
+═══════════════════════════════ -->
+<div id="tab-tracker" class="tab-content fade-in">
+
+  <div class="note n-slate" style="margin-bottom:24px;">
+    <strong>每月更新一次，不是每天</strong>
+    这不是仪表盘，是校准工具。每月月底花15分钟填一次，看看轨迹有没有偏，需不需要调整策略。
+  </div>
+
+  <div class="tracker-wrap">
+    <div class="tr-title">关键指标 · 每月更新</div>
+    <div class="tr-grid">
+      <div class="tr-item">
+        <div class="tr-label">本月职业行动完成了几件</div>
+        <input class="tr-input" type="text" placeholder="0 件" id="asset">
+        <div class="tr-bar"><div class="tr-fill" id="asset-bar" style="width:0%"></div></div>
+        <div class="tr-note">投简历 / 整理作品集 / 找人聊 / 深研岗位……有做就记</div>
+      </div>
+      <div class="tr-item">
+        <div class="tr-label">本周主任务完成率</div>
+        <input class="tr-input" type="text" placeholder="5 / 5" id="income">
+        <div class="tr-bar"><div class="tr-fill" id="income-bar" style="width:0%"></div></div>
+        <div class="tr-note">每天1件主任务 · 做完就算赢</div>
+      </div>
+      <div class="tr-item">
+        <div class="tr-label">本月主动社交次数</div>
+        <input class="tr-input" type="text" placeholder="0" id="social">
+        <div class="tr-bar"><div class="tr-fill" id="social-bar" style="width:0%"></div></div>
+        <div class="tr-note">目标每月4次（每周1次）</div>
+      </div>
+      <div class="tr-item">
+        <div class="tr-label">本月投资研究超时了吗</div>
+        <input class="tr-input" type="text" placeholder="否 / 超了X次" id="invest-ctrl">
+        <div class="tr-bar"><div class="tr-fill" style="width:100%; background:var(--sage)"></div></div>
+        <div class="tr-note">上限：每周60分钟</div>
+      </div>
+      <div class="tr-item">
+        <div class="tr-label">本月职业发展行动</div>
+        <input class="tr-input" type="text" placeholder="投简历/整理作品集/..." id="career-act">
+        <div class="tr-bar"><div class="tr-fill" style="width:0%"></div></div>
+        <div class="tr-note">有没有真正做了什么</div>
+      </div>
+      <div class="tr-item">
+        <div class="tr-label">本月最重要的一件事完成了吗</div>
+        <input class="tr-input" type="text" placeholder="完成 / 未完成 / 原因" id="main-task">
+        <div class="tr-bar"><div class="tr-fill" style="width:0%"></div></div>
+        <div class="tr-note">这一件事 > 其他所有事</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note n-ink" style="margin-top:20px;">
+    <strong>月度校准三问</strong>
+    1. 这个月，我有没有在朝职业突破的方向真正行动（不是学习，是行动）？<br>
+    2. 关系这件事，我有没有主动花时间，还是又推到下个月了？<br>
+    3. 有没有因为焦虑做出违反自己原则的投资决策？
+  </div>
+
+</div><!-- /tab-tracker -->
+
+
+<div class="colophon fade-in" style="animation-delay:0.5s">
+  这份系统不是要让你更忙<br>
+  而是让你把有限的精力，花在真正能改变轨迹的事上<br><br>
+  每周日下午，拿出来看一眼下周的安排<br>
+  每月底，更新一次进度追踪<br><br>
+  — 此刻清醒 · 2026年5月
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// Tab switching
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// Toggle block
+function toggle(el) {
+  el.classList.toggle('open');
+}
+
+// Checkbox
+function chk(el, e) {
+  e.stopPropagation();
+  el.classList.toggle('done');
+  el.textContent = el.classList.contains('done') ? '✓' : '';
+  const nameEl = el.closest('.task').querySelector('.task-name');
+  if (nameEl) nameEl.classList.toggle('crossed', el.classList.contains('done'));
+}
+
+// Asset bar update
+document.getElementById('asset').addEventListener('input', function() {
+  const v = parseFloat(this.value) || 0;
+  const pct = Math.min((v / 10) * 100, 100); // 目标每月10件职业行动
+  document.getElementById('asset-bar').style.width = pct + '%';
+});
+
+document.getElementById('income').addEventListener('input', function() {
+  const raw = this.value.trim();
+  const parts = raw.split('/').map(s => parseFloat(s.trim()));
+  const pct = parts.length === 2 && parts[1] > 0
+    ? Math.min((parts[0] / parts[1]) * 100, 100)
+    : 0;
+  document.getElementById('income-bar').style.width = pct + '%';
+});
+
+document.getElementById('social').addEventListener('input', function() {
+  const v = parseFloat(this.value) || 0;
+  const pct = Math.min((v / 4) * 100, 100);
+  document.getElementById('social-bar').style.width = pct + '%';
+});
+
+// Persist to localStorage
+const fields = ['asset','income','social','invest-ctrl','career-act','main-task'];
+fields.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const saved = localStorage.getItem('guide_' + id);
+  if (saved) el.value = saved;
+  el.addEventListener('input', () => localStorage.setItem('guide_' + id, el.value));
+});
+</script>
+</body>
+</html>
