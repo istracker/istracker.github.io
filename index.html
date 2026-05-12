@@ -50,7 +50,7 @@ body::before {
 .book {
   max-width: 780px;
   margin: 0 auto;
-  padding: 60px 40px 100px;
+  padding: 112px 40px 100px;
   position: relative;
 }
 
@@ -518,9 +518,64 @@ body::before {
   .fp-items { gap: 24px; }
   .horizon { padding: 24px; }
 }
+/* ── NAV ── */
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(249, 246, 240, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+.nav-brand {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+.nav-link {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 12px;
+  color: var(--ink3);
+  text-decoration: none;
+  transition: color 0.2s;
+  letter-spacing: 0.5px;
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active { color: var(--ink); font-weight: 500; }
+@media(max-width:640px){
+  .nav-inner { padding: 0 16px; }
+  .nav-links { gap: 16px; }
+}
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">28岁指南</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">人生指南</a>
+      <a href="/daily_guide.html" class="nav-link">每日执行</a>
+    </div>
+  </div>
+</nav>
 <div class="book">
 
   <!-- ── TITLE PAGE ── -->
